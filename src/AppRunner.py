@@ -135,7 +135,7 @@ def runApp(
         )
         st.sidebar.markdown(
             """
-            - <a href="https://google.github.io/mediapipe/#ml-solutions-in-mediapipe" style="text-decoration:none;">ML solutions in MediaPipe</a>
+            - <a href="https://web.archive.org/web/20210817201758/https://google.github.io/mediapipe/#ml-solutions-in-mediapipe" style="text-decoration:none;">ML solutions in MediaPipe</a>
             """,
             unsafe_allow_html=True,
         )

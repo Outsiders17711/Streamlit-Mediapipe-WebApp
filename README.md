@@ -1,13 +1,13 @@
 ## Streamlit Mediapipe WebApp
 
-This application explores the functionality of some of Google's [**Mediapipe**](https://google.github.io/mediapipe/) Machine Learning solutions, viz:
+This application explores the functionality of some of Google's [**Mediapipe**](https://web.archive.org/web/20210817201758/https://google.github.io/mediapipe/) Machine Learning solutions, viz:
 
 - Hand Tracking
 - Pose Estimation
 - Face Detection 
 - Face Mesh
 
-[**StreamLit**](https://streamlit.io/) is used to create the Web Graphical User Interface (GUI). Streamlit is a cool way to turn data scripts into shareable web apps in minutes, all in Python. You can check out the launch [*blog post*](https://towardsdatascience.com/coding-ml-tools-like-you-code-ml-models-ddba3357eace) for more information.
+[**StreamLit**](https://streamlit.io/) is used to create the Web Graphical User Interface (GUI). Streamlit is a cool way to turn data scripts into shareable web apps in minutes, all in Python. You can check out the launch [*blog post*](https://web.archive.org/web/20191006130019/https://towardsdatascience.com/coding-ml-tools-like-you-code-ml-models-ddba3357eace) for more information.
 
 This web app was inspired by the awesome YouTube tutorials created by:
 
@@ -16,13 +16,13 @@ This web app was inspired by the awesome YouTube tutorials created by:
 
 Do check out their channels and websites for more informative and exciting Machine Learning & Computer Vision tutorials.
 
-## Demo
+## Online Deployment
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/outsiders17711/streamlit-mediapipe-webapp/main/streamlitMediapipeOnline.py)
 
 The app is deployed on Streamlit through the online entrypoint at `streamlitMediapipeOnline.py`. You can check it out **[here](https://share.streamlit.io/outsiders17711/streamlit-mediapipe-webapp/main/streamlitMediapipeOnline.py)**.
 
-![Short Demo](https://github.com/Outsiders17711/streamlit-Mediapipe-WebApp/blob/main/docs/streamlitMediapipe.gif?raw=true)
+![Short Demo](docs/streamlitMediapipe.gif)
 
 ### Note: Video Sources Disabled On Streamlit Share
 
