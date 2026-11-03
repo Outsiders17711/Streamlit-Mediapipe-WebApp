@@ -1,0 +1,17 @@
+[project]
+name = "streamlit-mediapipe-webapp"
+version = "0.1.0"
+description = "Streamlit web app for MediaPipe hand, pose, face detection and face mesh solutions"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # last release with the legacy mp.solutions api used by this project.
+    "mediapipe==0.10.21",
+    # last release compatible with mediapipe's protobuf<5 constraint.
+    "streamlit==1.60.0",
+    "numpy==1.26.4",
+    "opencv-contrib-python==4.11.0.86",
+]
+
+[tool.uv]
+package = false
