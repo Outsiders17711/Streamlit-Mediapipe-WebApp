@@ -18,9 +18,9 @@ Do check out their channels and websites for more informative and exciting Machi
 
 ## Online Deployment
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/outsiders17711/streamlit-mediapipe-webapp/main/streamlitMediapipeOnline.py)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://outsiders17711-mediapipe-webapp.streamlit.app/)
 
-The app is deployed on Streamlit through the online entrypoint at `streamlitMediapipeOnline.py`. You can check it out **[here](https://share.streamlit.io/outsiders17711/streamlit-mediapipe-webapp/main/streamlitMediapipeOnline.py)**.
+The app is deployed on Streamlit through the online entrypoint at `streamlitMediapipeOnline.py`. You can check it out **[here](https://outsiders17711-mediapipe-webapp.streamlit.app/)**.
 
 ![Short Demo](docs/streamlitMediapipe.gif)
 

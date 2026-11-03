@@ -15,11 +15,10 @@ __all__ = [
 pageConfig = """
         <style>
         [data-testid="stSidebar"][aria-expanded="true"] > div:first-child{
-            width: 400px;
+            width: 100%;
         }
         [data-testid="stSidebar"][aria-expanded="false"] > div:first-child{
-            width: 400px;
-            margin-left: -400px;
+            width: 100%;
         }
         </style>
         """
