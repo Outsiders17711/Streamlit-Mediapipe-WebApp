@@ -17,3 +17,16 @@ dependencies = [
 
 [tool.uv]
 package = false
+
+[tool.ruff]
+line-length = 105
+
+[tool.ruff.lint]
+select = ["F", "I"]
+ignore = ["F401", "F403", "F405"]
+
+[tool.pyright]
+include = ["src", "streamlitMediapipe.py", "streamlitMediapipeOnline.py"]
+pythonVersion = "3.13"
+venvPath = "."
+venv = ".venv"

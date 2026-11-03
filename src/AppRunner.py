@@ -20,6 +20,8 @@ def runApp(
 ) -> None:
     gc.enable()
     st.set_page_config(page_title="Streamlit Mediapipe WebApp", layout="wide")
+    ctx = get_script_run_ctx()
+    assert ctx is not None, "!!!"
 
     webapp = getSessionState(
         idx_current_page=idx_current_page,
@@ -70,9 +72,9 @@ def runApp(
     st.markdown(
         f"""
         {pageConfig}
-        <div style="text-align:center; margin-top:-75px; ">
+        <div style="text-align:center; margin-top:-50px; ">
         <h1 style="font-variant: small-caps; font-size: xx-large; margin-bottom:-45px;" >
-        <font color=#ea0525>w e b {nbsp*2} a p p</font>
+        <font color=#ea0525>w e b {nbsp * 2} a p p</font>
         </h1>
         <h1> Streamlit Mediapipe Webapp </h1>
         <hr>
@@ -81,18 +83,14 @@ def runApp(
         unsafe_allow_html=True,
     )
 
-    gc_indicator = (
-        f'<br><code style="font-size:small; ">{gc.get_count()}</code>'
-        if show_gc
-        else ""
-    )
+    gc_indicator = f'<br><code style="font-size:small; ">{gc.get_count()}</code>' if show_gc else ""
     st.sidebar.markdown(
         f"""
-        <div style="text-align:center; margin-top:-75px; margin-bottom:20px; ">
+        <div style="text-align:center; margin-top:-50px; margin-bottom:20px; ">
         <h3 style="font-variant: small-caps; font-size: xx-large; ">
         <font color=#ea0525>s i d e {nbsp} b a r</font>
         </h3>
-        <code style="font-size:small; ">{get_script_run_ctx().session_id}</code>{gc_indicator}
+        <code style="font-size:small; ">{ctx.session_id}</code>{gc_indicator}
         </div>
         """,
         unsafe_allow_html=True,
@@ -114,9 +112,7 @@ def runApp(
 
         st.markdown(aboutMe(), unsafe_allow_html=True)
         st.sidebar.markdown("---")
-        st.sidebar.image(
-            open_img_path_url("highlord.jpg", "path"), use_column_width="auto"
-        )
+        st.sidebar.image(open_img_path_url("highlord.jpg", "path"), width="stretch")
         st.sidebar.markdown("---")
 
     elif webapp.idx_current_page == appPages.index("Home Page"):
@@ -130,9 +126,7 @@ def runApp(
 
         st.markdown(aboutWebApp()[0], unsafe_allow_html=True)
 
-        st.sidebar.image(
-            open_img_path_url("mediapipe.jpg", "path"), use_column_width="auto"
-        )
+        st.sidebar.image(open_img_path_url("mediapipe.jpg", "path"), width="stretch")
         st.sidebar.markdown(
             """
             - <a href="https://web.archive.org/web/20210817201758/https://google.github.io/mediapipe/#ml-solutions-in-mediapipe" style="text-decoration:none;">ML solutions in MediaPipe</a>
@@ -141,16 +135,14 @@ def runApp(
         )
         st.sidebar.image(
             open_img_path_url("mediapipe_solutions.jpg", "path"),
-            use_column_width="auto",
+            width="stretch",
         )
 
         vid1, vid2 = st.columns([1, 1])
         vid1.video("https://www.youtube.com/watch?v=01sAkU_NvOY")
         vid1.caption("Advanced Computer Vision with Python - Full Course")
         vid2.video("https://www.youtube.com/watch?v=wyWmWaXapmI")
-        vid2.caption(
-            "StreamLit Computer Vision User Interface Course | MediaPipe OpenCV Python (2021)"
-        )
+        vid2.caption("StreamLit Computer Vision User Interface Course | MediaPipe OpenCV Python (2021)")
 
         st.markdown(aboutWebApp()[1], unsafe_allow_html=True)
 

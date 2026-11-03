@@ -1,23 +1,36 @@
 # %%
+from typing import Any
+
 import cv2 as cv
 import mediapipe as mp
 import streamlit as st
+
+__all__ = [
+    "faceDetector",
+    "faceMeshDetector",
+    "handDetector",
+    "poseDetector",
+]
+
+MPS: Any = mp.solutions  # type: ignore
 
 
 # [start]____________________________________________________________
 @st.cache_resource(max_entries=10, ttl=3600)
 def mpSolutions(type):
     if type == "hands":
-        return mp.solutions.hands, mp.solutions.drawing_utils
+        return MPS.hands, MPS.drawing_utils
     elif type == "pose":
-        return mp.solutions.pose, mp.solutions.drawing_utils
+        return MPS.pose, MPS.drawing_utils
     elif type == "face_detection":
-        return mp.solutions.face_detection, mp.solutions.drawing_utils
+        return MPS.face_detection, MPS.drawing_utils
     elif type == "face_mesh":
-        return mp.solutions.face_mesh, mp.solutions.drawing_utils
+        return MPS.face_mesh, MPS.drawing_utils
+    raise ValueError(f"Unknown solution type: {type}")
 
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
+
 
 # [start]____________________________________________________________
 @st.cache_resource(max_entries=10, ttl=3600)
@@ -28,8 +41,6 @@ class handDetector:
         self.detectionConfidence = solutionConfidence
         self.trackingConfidence = solutionConfidence
 
-        # self.mpHands = mp.solutions.hands
-        # self.mpDraw = mp.solutions.drawing_utils
         self.mpHands, self.mpDraw = mpSolutions("hands")
         self.hands = self.mpHands.Hands(
             static_image_mode=self.imageMode,
@@ -49,14 +60,13 @@ class handDetector:
                 for idx, LM in enumerate(handLM.landmark):
                     x_pixels, y_pixels = int(LM.x * iw), int(LM.y * ih)
                     if idx in [0, 4, 8, 12, 16, 20]:
-                        cv.circle(
-                            imgRGB, (x_pixels, y_pixels), 5, (255, 0, 255), cv.FILLED
-                        )
+                        cv.circle(imgRGB, (x_pixels, y_pixels), 5, (255, 0, 255), cv.FILLED)
 
         return imgRGB
 
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
+
 
 # [start]____________________________________________________________
 @st.cache_resource(max_entries=10, ttl=3600)
@@ -67,8 +77,6 @@ class poseDetector:
         self.detectionConfidence = solutionConfidence
         self.trackingConfidence = solutionConfidence
 
-        # self.mpPose = mp.solutions.pose
-        # self.mpDraw = mp.solutions.drawing_utils
         self.mpPose, self.mpDraw = mpSolutions("pose")
         self.pose = self.mpPose.Pose(
             static_image_mode=self.imageMode,
@@ -82,9 +90,7 @@ class poseDetector:
         ih, iw = imgRGB.shape[:2]
 
         if self.results.pose_landmarks:
-            self.mpDraw.draw_landmarks(
-                imgRGB, self.results.pose_landmarks, self.mpPose.POSE_CONNECTIONS
-            )
+            self.mpDraw.draw_landmarks(imgRGB, self.results.pose_landmarks, self.mpPose.POSE_CONNECTIONS)
 
             for idx, LM in enumerate(self.results.pose_landmarks.landmark):
                 x_pixels, y_pixels = int(LM.x * iw), int(LM.y * ih)
@@ -95,6 +101,7 @@ class poseDetector:
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
+
 # [start]____________________________________________________________
 @st.cache_resource(max_entries=10, ttl=3600)
 class faceDetector:
@@ -102,8 +109,6 @@ class faceDetector:
         self.detectionConfidence = solutionConfidence
         self.modelSelection = modelSelection
 
-        # self.mpFace = mp.solutions.face_detection
-        # self.mpDraw = mp.solutions.drawing_utils
         self.mpFace, self.mpDraw = mpSolutions("face_detection")
         self.face = self.mpFace.FaceDetection(
             min_detection_confidence=self.detectionConfidence,
@@ -165,6 +170,7 @@ class faceDetector:
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
+
 # [start]____________________________________________________________
 @st.cache_resource(max_entries=10, ttl=3600)
 class faceMeshDetector:
@@ -174,8 +180,6 @@ class faceMeshDetector:
         self.detectionConfidence = solutionConfidence
         self.trackingConfidence = solutionConfidence
 
-        # self.mpFaceMesh = mp.solutions.face_mesh
-        # self.mpDraw = mp.solutions.drawing_utils
         self.mpFaceMesh, self.mpDraw = mpSolutions("face_mesh")
         self.faceMesh = self.mpFaceMesh.FaceMesh(
             static_image_mode=self.imageMode,

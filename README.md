@@ -31,7 +31,7 @@ There have been a couple of (potentially related) issues with running video sour
 1. There is a considerable lag when running the Mediapipe modules on videos with one viewer/user.
 2. If multiple viewers/users attempt to use video inputs at the same time, the app becomes totally unresponsive and needs to be rebooted.
 
-> If you want to test out video sources, clone the [source repository](https://github.com/Outsiders17711/streamlit-Mediapipe-WebApp) and run the local app.
+> If you want to test out video sources, clone the [source repository](https://github.com/Outsiders17711/Streamlit-Mediapipe-WebApp) and run the local app.
 
 ## Running Locally
 

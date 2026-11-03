@@ -4,13 +4,22 @@ import random
 import shutil
 import tempfile
 import traceback
+from typing import Literal, overload
 from urllib.request import Request, urlopen
 
 import cv2 as cv
 import numpy as np
 import streamlit as st
+
 from src.content import *
 from src.detectors import *
+
+__all__ = [
+    "appModules",
+    "appPages",
+    "open_img_path_url",
+    "read_source_media",
+]
 
 gc.enable()
 
@@ -55,8 +64,13 @@ appModules = ["Hand Tracking", "Pose Estimation", "Face Detection", "Face Mesh"]
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
 
-def open_img_path_url(url_or_file, source_type, source_path=None, resize=False):
-    img, mask = [], []
+def open_img_path_url(
+    url_or_file: str,
+    source_type: str,
+    source_path: str | None = None,
+    resize: bool = False,
+):
+    img = None
 
     if source_type == "path":
         if source_path is None:
@@ -68,6 +82,7 @@ def open_img_path_url(url_or_file, source_type, source_path=None, resize=False):
         img = np.asarray(bytearray(resp.read()), dtype="uint8")
         img = cv.imdecode(img, cv.IMREAD_COLOR)
 
+    assert img is not None, "!!!"
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
 
     if not resize:
@@ -91,8 +106,32 @@ def open_img_path_url(url_or_file, source_type, source_path=None, resize=False):
             return img, r_img
 
 
-def open_vid_path_url(url_or_file, source_type, source_path=None, preview=False):
-    vid, vid_preview = [], []
+@overload
+def open_vid_path_url(
+    url_or_file: str,
+    source_type: str,
+    source_path: str | None = None,
+    *,
+    preview: Literal[True],
+) -> tuple[cv.VideoCapture, str]: ...
+
+
+@overload
+def open_vid_path_url(
+    url_or_file: str,
+    source_type: str,
+    source_path: str | None = None,
+    preview: Literal[False] = False,
+) -> cv.VideoCapture: ...
+
+
+def open_vid_path_url(
+    url_or_file: str,
+    source_type: str,
+    source_path: str | None = None,
+    preview: bool = False,
+) -> tuple[cv.VideoCapture, str] | cv.VideoCapture:
+    vid_preview = ""
 
     if source_type == "path":
         if source_path is None:
@@ -123,7 +162,7 @@ def init_module(media, type, detector, placeholders):
 
     if type == "image":
         img = detector.findFeatures(media)
-        placeholders[1].columns([2, 10, 2])[1].image(img, use_column_width=True)
+        placeholders[1].columns([2, 10, 2])[1].image(img, width="stretch")
 
         del img  # garbage collection
 
@@ -131,7 +170,7 @@ def init_module(media, type, detector, placeholders):
         stop_clicked = cols[3].button("🟥 STOP")
         start_clicked = cols[0].button("🟢 START")
 
-        codec = cv.VideoWriter_fourcc(*"VP80")
+        codec = cv.VideoWriter_fourcc(*"VP80")  # type: ignore
         vid_w = int(media.get(cv.CAP_PROP_FRAME_WIDTH))
         vid_h = int(media.get(cv.CAP_PROP_FRAME_HEIGHT))
         vid_fps = int(media.get(cv.CAP_PROP_FPS))
@@ -143,7 +182,6 @@ def init_module(media, type, detector, placeholders):
             os.mkdir(temp_dir)
         out_vid_file = os.path.join(temp_dir, "vid_output.webm")
         out_vid = cv.VideoWriter(out_vid_file, codec, vid_fps, (vid_w, vid_h))
-        # st.write(temp_dir, out_vid_file)
 
         placeholders[1].info(
             "Click **START** to process video input. Output video length is capped at 15 seconds. You can use the **STOP** button to cancel processing."
@@ -170,7 +208,6 @@ def init_module(media, type, detector, placeholders):
                     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
                     img = detector.findFeatures(img)
 
-                    # placeholders[1].columns([2, 10, 2])[1].image(img, use_column_width=True)
                     out_vid.write(cv.cvtColor(img, cv.COLOR_RGB2BGR))
 
                     del img  # garbage collection
@@ -180,7 +217,7 @@ def init_module(media, type, detector, placeholders):
                         media.release()
                         out_vid.release()
                         st.success(
-                            f"**Input video processed successfully! Use the player controls to play and download the processed video!**"
+                            "**Input video processed successfully! Use the player controls to play and download the processed video!**"
                         )
                         break
 
@@ -196,8 +233,7 @@ def init_module(media, type, detector, placeholders):
 
 
 def run_selected_module(_fs, media, type, ph_variables):
-    moreInfo1 = st.empty()
-    moreInfo2 = st.empty()
+    about = st.empty()
     moduleOutput1 = st.empty()
     moduleOutput2 = st.empty()
 
@@ -213,9 +249,6 @@ def run_selected_module(_fs, media, type, ph_variables):
 
     module_selection = appModules[_fs.idx_current_module]
     if module_selection == "Hand Tracking":
-        moreInfo1.markdown(
-            "*Click below for information on the Mediapipe **Hands** solution...*"
-        )
         new_value = ph_variables[1].number_input(
             "Number Of Hands [1-6]", min_value=1, max_value=6, value=_fs.num_hands
         )
@@ -223,20 +256,15 @@ def run_selected_module(_fs, media, type, ph_variables):
             _fs.num_hands = new_value
             st.rerun()
 
-        with moreInfo2.expander(""):
+        with about.expander("Information on the Mediapipe **Hands** solution..."):
             st.markdown(aboutMpHands(), unsafe_allow_html=True)
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
-        detector = handDetector(
-            numHands=_fs.num_hands, solutionConfidence=_fs.sol_confidence
-        )
+        detector = handDetector(numHands=_fs.num_hands, solutionConfidence=_fs.sol_confidence)
         init_module(media, type, detector, (moduleOutput1, moduleOutput2))
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
     elif module_selection == "Pose Estimation":
-        moreInfo1.markdown(
-            "*Click below for information on the Mediapipe **Pose** solution...*"
-        )
         new_value = ph_variables[1].number_input(
             "Smooth Landmarks [0/1]", min_value=0, max_value=1, value=_fs.smooth_lms
         )
@@ -244,7 +272,7 @@ def run_selected_module(_fs, media, type, ph_variables):
             _fs.smooth_lms = new_value
             st.rerun()
 
-        with moreInfo2.expander(""):
+        with about.expander("Information on the Mediapipe **Pose** solution..."):
             st.markdown(aboutMpPose(), unsafe_allow_html=True)
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
@@ -255,9 +283,6 @@ def run_selected_module(_fs, media, type, ph_variables):
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
     elif module_selection == "Face Detection":
-        moreInfo1.markdown(
-            "*Click below for information on the Mediapipe **Face Detection** solution...*"
-        )
         new_value = ph_variables[1].number_input(
             "Model Selection [0/1]", min_value=0, max_value=1, value=_fs.face_model
         )
@@ -265,20 +290,15 @@ def run_selected_module(_fs, media, type, ph_variables):
             _fs.face_model = new_value
             st.rerun()
 
-        with moreInfo2.expander(""):
+        with about.expander("Information on the Mediapipe **Face Detection** solution..."):
             st.markdown(aboutMpFaceDetection(), unsafe_allow_html=True)
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
-        detector = faceDetector(
-            modelSelection=_fs.face_model, solutionConfidence=_fs.sol_confidence
-        )
+        detector = faceDetector(modelSelection=_fs.face_model, solutionConfidence=_fs.sol_confidence)
         init_module(media, type, detector, (moduleOutput1, moduleOutput2))
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
     elif module_selection == "Face Mesh":
-        moreInfo1.markdown(
-            "*Click below for information on the Mediapipe **Face Mesh** solution...*"
-        )
         new_value = ph_variables[1].number_input(
             "Number Of Faces [1-5]", min_value=1, max_value=5, value=_fs.num_faces
         )
@@ -286,23 +306,19 @@ def run_selected_module(_fs, media, type, ph_variables):
             _fs.num_faces = new_value
             st.rerun()
 
-        with moreInfo2.expander(""):
+        with about.expander("Information on the Mediapipe **Face Mesh** solution..."):
             st.markdown(aboutMpFaceMesh(), unsafe_allow_html=True)
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
-        detector = faceMeshDetector(
-            numFaces=_fs.num_faces, solutionConfidence=_fs.sol_confidence
-        )
+        detector = faceMeshDetector(numFaces=_fs.num_faces, solutionConfidence=_fs.sol_confidence)
         init_module(media, type, detector, (moduleOutput1, moduleOutput2))
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-[end]
 
     # garbage collection
     del (
-        moreInfo1,
-        moreInfo2,
+        about,
         moduleOutput1,
         moduleOutput2,
-        detector,
     )
 
 
@@ -325,14 +341,12 @@ def read_source_media(_fs, appSources, ph_variables):
             _fs.current_image_upload = temp_file.name
 
         if _fs.current_image_upload != "":
-            img, mask = open_img_path_url(
-                _fs.current_image_upload, "path", source_path="", resize=True
-            )
+            img, mask = open_img_path_url(_fs.current_image_upload, "path", source_path="", resize=True)
 
             st.sidebar.markdown("")
             cols = st.sidebar.columns([3, 2])
             cols[0].text("Original Image")
-            st.sidebar.image(mask, use_column_width=True)
+            st.sidebar.image(mask, width="stretch")
             if cols[1].button("Clear Upload"):
                 _fs.current_image_upload = ""
                 _fs.uploader_key += 1
@@ -348,7 +362,7 @@ def read_source_media(_fs, appSources, ph_variables):
         st.sidebar.markdown("")
         cols = st.sidebar.columns([3, 2])
         cols[0].text("Original Image")
-        st.sidebar.image(img, use_column_width=True)
+        st.sidebar.image(img, width="stretch")
         if cols[1].button("Change Image"):
             _fs.current_image_path = random.choice(demoImages)
             st.rerun()
@@ -363,7 +377,7 @@ def read_source_media(_fs, appSources, ph_variables):
         st.sidebar.markdown("")
         cols = st.sidebar.columns([3, 2])
         cols[0].text("Original Image")
-        st.sidebar.image(img, use_column_width=True)
+        st.sidebar.image(img, width="stretch")
         if cols[1].button("Change Image"):
             _fs.idx_url_image += 1
             _fs.current_image_url = urlImages[_fs.idx_url_image % len(urlImages)]
@@ -438,7 +452,7 @@ def read_source_media(_fs, appSources, ph_variables):
         cols = st.sidebar.columns([3, 2])
         cols[0].markdown(f"**Webcam**: _Device ID = {_fs.webcam_device_id}_")
         st.sidebar.image(open_img_path_url(demoWebCam, "path"))
-        if cols[1].button(f"Switch Device"):
+        if cols[1].button("Switch Device"):
             _fs.webcam_device_id = 0 if _fs.webcam_device_id == 1 else 1
             st.rerun()
 
@@ -454,7 +468,7 @@ def read_source_media(_fs, appSources, ph_variables):
 
         st.info(
             f""" 
-        ### {nbsp*20}**VIDEO SOURCES DISABLED ON STREAMLIT SHARE**
+        ### {nbsp * 20}**VIDEO SOURCES DISABLED ON STREAMLIT SHARE**
         ---
         There have been a couple of issues running video sources on the online shared app:
 
@@ -465,7 +479,7 @@ def read_source_media(_fs, appSources, ph_variables):
         
         ---
 
-        **If you want to test out video sources, you can clone the [source repository](https://github.com/Outsiders17711/streamlit-Mediapipe-WebApp), install the requirements and run `streamlitMediapipe.py`.**
+        **If you want to test out video sources, you can clone the [source repository](https://github.com/Outsiders17711/Streamlit-Mediapipe-WebApp), install the requirements and run `streamlitMediapipe.py`.**
 
         ---
 
